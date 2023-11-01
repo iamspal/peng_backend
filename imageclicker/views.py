@@ -5,20 +5,16 @@ from django.views.decorators.http import require_http_methods
 from .models import Gif
 
 def index(request) :
-    print(request)
-    gifs = serializers.serialize("json", Gif.objects.all());
-    return JsonResponse({'data': gifs});
+    return JsonResponse({'data': list(Gif.objects.all().values())}, safe=False)
 
 @require_http_methods(["POST"])
 def vote_gif(request):
-        try:
-            id = request.POST.get('id')
-            gif = Gif.objects.get(id=id)
-        except Gif.DoesNotExist:
-            return JsonResponse({'error': 'Gif not found'}, status=404)
-            
-        gif.votes = gif.votes+1
-        gif.save()
-        gif = serializers.serialize("json", [gif]);
-
-        return JsonResponse({'message': 'Votes updated successfully', 'data': gif})
+    try:
+        id = request.POST.get('id')
+        gif = Gif.objects.get(id=id)
+    except Gif.DoesNotExist:
+        return JsonResponse({'error': 'Gif not found'}, status=404)
+        
+    gif.votes = gif.votes+1
+    gif.save()                
+    return JsonResponse({'message': 'Votes updated successfully', 'success': True })
