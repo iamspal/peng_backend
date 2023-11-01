@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.core import serializers
+from django.views.decorators.http import require_http_methods
 from .models import Gif
 
 def index(request) :
@@ -8,10 +9,10 @@ def index(request) :
     gifs = serializers.serialize("json", Gif.objects.all());
     return JsonResponse({'data': gifs});
 
+@require_http_methods(["POST"])
 def vote_gif(request):
-    if request.method == 'POST':
-        id = request.POST.get('id')
         try:
+            id = request.POST.get('id')
             gif = Gif.objects.get(id=id)
         except Gif.DoesNotExist:
             return JsonResponse({'error': 'Gif not found'}, status=404)
@@ -21,5 +22,3 @@ def vote_gif(request):
         gif = serializers.serialize("json", [gif]);
 
         return JsonResponse({'message': 'Votes updated successfully', 'data': gif})
-    else:
-        return JsonResponse({'error': 'Invalid request method'}, status=405)
